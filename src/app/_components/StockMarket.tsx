@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { api } from '~/trpc/react';
+import { signIn, useSession } from 'next-auth/react';
 
 interface Stock {
   id: string;
@@ -25,7 +26,7 @@ export const StockMarket: React.FC<StockMarketProps> = ({ initialStocks = [] }) 
   // Use initial data from server and enable real-time updates
   const { data: stocks, isLoading } = api.stocks.getAll.useQuery(undefined, {
     initialData: initialStocks,
-    refetchInterval: 5000, // Refetch every 5 seconds
+    refetchInterval: 10000, // Refetch every 10 seconds
   });
   
   const buyMutation = api.stocks.buy.useMutation({
@@ -43,6 +44,12 @@ export const StockMarket: React.FC<StockMarketProps> = ({ initialStocks = [] }) 
   });
 
   const handleTrade = async (type: 'BUY' | 'SELL', stockId: string) => {
+    const { data: session } = useSession();
+    if (!session) {
+      signIn("google");
+      return;
+    }
+  
     try {
       if (type === 'BUY') {
         await buyMutation.mutateAsync({ stockId, quantity: parseInt(quantity) });

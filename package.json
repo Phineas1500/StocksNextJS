@@ -9,7 +9,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "dev": "next dev",
+    "dev:simulation": "tsx scripts/simulate-prices.ts",
+    "dev": "concurrently \"next dev\" \"npm run dev:simulation\"",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start"
@@ -46,6 +47,7 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.4",
     "postcss": "^8.4.39",
@@ -54,6 +56,7 @@
     "prisma": "^5.14.0",
     "tailwindcss": "^3.4.3",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   },
   "ct3aMetadata": {

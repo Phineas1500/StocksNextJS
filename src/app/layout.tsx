@@ -1,4 +1,5 @@
 import { TRPCReactProvider } from "~/trpc/react";
+import { SessionProvider } from "~/components/providers/SessionProvider";
 import "~/styles/globals.css";
 
 export default function RootLayout({
@@ -9,7 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <SessionProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </SessionProvider>
       </body>
     </html>
   );
