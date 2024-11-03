@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
+import { type PrismaClient } from "@prisma/client";
+import { type Session } from "next-auth";
 
 export const stocksRouter = createTRPCRouter({
   getAll: publicProcedure
@@ -36,4 +38,31 @@ export const stocksRouter = createTRPCRouter({
         throw error;
       }
     }),
+    buy: protectedProcedure
+      .input(z.object({
+        stockId: z.string(),
+        quantity: z.number().positive()
+      }))
+      .mutation(async ({ ctx, input }: {
+        ctx: { db: PrismaClient; session: Session };
+        input: { stockId: string; quantity: number };
+      }) => {
+        return await ctx.db.$executeRaw`
+          CALL BuyStock(${ctx.session.user.id}, ${input.stockId}, ${input.quantity})
+        `;
+      }),
+
+    sell: protectedProcedure
+      .input(z.object({
+        stockId: z.string(),
+        quantity: z.number().positive()
+      }))
+      .mutation(async ({ ctx, input }: {
+        ctx: { db: PrismaClient; session: Session };
+        input: { stockId: string; quantity: number };
+      }) => {
+        return await ctx.db.$executeRaw`
+          CALL SellStock(${ctx.session.user.id}, ${input.stockId}, ${input.quantity})
+        `;
+      }),
 });

@@ -1,21 +1,19 @@
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
+import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
 import { ZodError } from "zod";
+
+import { getServerAuthSession } from "~/server/auth";
 import { db } from "~/server/db";
 
-type CreateContextOptions = {
-  headers: Headers;
-};
-
-export const createInnerTRPCContext = (opts: CreateContextOptions) => {
+export const createTRPCContext = async (opts: CreateNextContextOptions) => {
+  const { req, res } = opts;
+  const session = await getServerAuthSession();
   return {
-    headers: opts.headers,
     db,
+    session,
+    ...opts,
   };
-};
-
-export const createTRPCContext = async (opts: { headers: Headers }) => {
-  return createInnerTRPCContext(opts);
 };
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
@@ -34,3 +32,16 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
+
+// Add this new export for protected routes
+export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});

@@ -22,6 +22,8 @@ interface StockMarketProps {
 
 export const StockMarket: React.FC<StockMarketProps> = ({ initialStocks = [] }) => {
   const [quantity, setQuantity] = useState<string>('');
+  const { data: session } = useSession();
+  const utils = api.useUtils();
   
   // Use initial data from server and enable real-time updates
   const { data: stocks, isLoading } = api.stocks.getAll.useQuery(undefined, {
@@ -31,20 +33,21 @@ export const StockMarket: React.FC<StockMarketProps> = ({ initialStocks = [] }) 
   
   const buyMutation = api.stocks.buy.useMutation({
     onSuccess: () => {
-      // Invalidate the stocks query to refetch after successful purchase
-      api.stocks.getAll.invalidate();
+      // Refetch the stocks data
+      utils.stocks.getAll.invalidate();
     },
   });
   
   const sellMutation = api.stocks.sell.useMutation({
     onSuccess: () => {
-      // Invalidate the stocks query to refetch after successful sale
-      api.stocks.getAll.invalidate();
+      // Refetch the stocks data
+      utils.stocks.getAll.invalidate();
     },
   });
+  
+
 
   const handleTrade = async (type: 'BUY' | 'SELL', stockId: string) => {
-    const { data: session } = useSession();
     if (!session) {
       signIn("google");
       return;

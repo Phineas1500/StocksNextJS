@@ -9,6 +9,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:procedures": "mysql -u root -p stocks < prisma/migrations/20240000000001_add_stored_procedures.sql",
     "dev:simulation": "tsx scripts/simulate-prices.ts",
     "dev": "concurrently \"next dev\" \"npm run dev:simulation\"",
     "postinstall": "prisma generate",
