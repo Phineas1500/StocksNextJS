@@ -1,3 +1,6 @@
+SET NAMES utf8mb4;
+SET collation_connection = utf8mb4_unicode_ci;
+
 DROP PROCEDURE IF EXISTS SellStock;
 
 DELIMITER //
@@ -11,7 +14,7 @@ BEGIN
     DECLARE v_price DECIMAL(10,2);
     DECLARE v_total_value DECIMAL(10,2);
     DECLARE v_current_quantity INT;
-    DECLARE v_portfolio_id VARCHAR(191);
+    DECLARE v_portfolio_id VARCHAR(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     
     START TRANSACTION;
     
@@ -26,9 +29,9 @@ BEGIN
     SET v_total_value = v_price * p_quantity;
 
     -- get current quantity owned
-    SELECT s.quantity, s.portfolioId INTO v_current_quantity, v_portfolio_id
+    SELECT s.quantity, p.id INTO v_current_quantity, v_portfolio_id
     FROM Portfolio p
-    JOIN Stock s ON p.id = s.portfolioId
+    JOIN Stock s ON p.id = s.portfolioId COLLATE utf8mb4_unicode_ci
     WHERE p.userId = p_userId COLLATE utf8mb4_unicode_ci
     AND s.companyId = p_stockId COLLATE utf8mb4_unicode_ci
     FOR UPDATE;
@@ -44,18 +47,18 @@ BEGIN
         INSERT INTO Transaction (id, userId, companyId, quantity, price, type, total, createdAt)
         VALUES (UUID(), p_userId, p_stockId, p_quantity, v_price, 'SELL', v_total_value, NOW());
         
-        -- update stock quantity
-        UPDATE Stock
-        SET quantity = quantity - p_quantity,
-            updatedAt = NOW()
-        WHERE portfolioId = v_portfolio_id
-        AND companyId = p_stockId COLLATE utf8mb4_unicode_ci;
+        -- update stock quantity using INSERT ON DUPLICATE KEY UPDATE
+        INSERT INTO Stock (id, portfolioId, companyId, quantity, createdAt, updatedAt)
+        VALUES (UUID(), v_portfolio_id, p_stockId, v_current_quantity - p_quantity, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+        quantity = quantity - p_quantity,
+        updatedAt = NOW();
         
         -- delete stock entry if quantity becomes 0
         DELETE FROM Stock 
-        WHERE portfolioId = v_portfolio_id 
+        WHERE portfolioId = v_portfolio_id COLLATE utf8mb4_unicode_ci
         AND companyId = p_stockId COLLATE utf8mb4_unicode_ci
-        AND quantity = 0;
+        AND quantity <= 0;
         
         COMMIT;
     ELSE
@@ -64,3 +67,5 @@ BEGIN
         SET MESSAGE_TEXT = 'Insufficient stock quantity';
     END IF;
 END //
+
+DELIMITER ;
