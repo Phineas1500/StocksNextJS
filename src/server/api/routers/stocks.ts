@@ -65,4 +65,47 @@ export const stocksRouter = createTRPCRouter({
           CALL SellStock(${ctx.session.user.id}, ${input.stockId}, ${input.quantity})
         `;
       }),
+      getPortfolio: protectedProcedure
+      .query(async ({ ctx }) => {
+        const portfolio = await ctx.db.portfolio.findUnique({
+          where: { userId: ctx.session.user.id },
+          include: {
+            stocks: {
+              include: {
+                company: {
+                  include: {
+                    stockPrices: {
+                      orderBy: { timestamp: 'desc' },
+                      take: 1,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        const user = await ctx.db.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: { balance: true },
+        });
+
+        const holdings = portfolio?.stocks.map((stock) => ({
+          symbol: stock.company.symbol,
+          name: stock.company.name,
+          quantity: stock.quantity,
+          currentPrice: stock.company.stockPrices[0]?.price.toNumber() ?? 0,
+          value: stock.quantity * (stock.company.stockPrices[0]?.price.toNumber() ?? 0),
+        })) ?? [];
+
+        const totalStockValue = holdings.reduce((sum, stock) => sum + stock.value, 0);
+        const totalValue = totalStockValue + (user?.balance.toNumber() ?? 0);
+
+        return {
+          holdings,
+          balance: user?.balance.toNumber() ?? 0,
+          totalStockValue,
+          totalValue,
+        };
+      }),
 });
