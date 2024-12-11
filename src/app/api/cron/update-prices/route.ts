@@ -1,7 +1,7 @@
 import { db } from "~/server/db";
 import { NextResponse } from "next/server";
-import { headers } from 'next/headers';
 
+// Reuse the same simulation logic from your simulate-prices.ts
 async function simulatePrices() {
   try {
     const companies = await db.company.findMany();
@@ -32,14 +32,6 @@ async function simulatePrices() {
 }
 
 export async function GET() {
-  // Check for authorization
-  const headersList = headers();
-  const authorization = headersList.get('Authorization');
-  
-  if (authorization !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
   const result = await simulatePrices();
   return NextResponse.json(result);
 }
