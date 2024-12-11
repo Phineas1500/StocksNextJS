@@ -28,7 +28,7 @@ export const StockMarket: React.FC<StockMarketProps> = ({ initialStocks = [] }) 
   // Use initial data from server and enable real-time updates
   const { data: stocks, isLoading } = api.stocks.getAll.useQuery(undefined, {
     initialData: initialStocks,
-    refetchInterval: 5000, // Refetch every 5 seconds
+    refetchInterval: 10000, // Refetch every 10 seconds
   });
   
   const buyMutation = api.stocks.buy.useMutation({
