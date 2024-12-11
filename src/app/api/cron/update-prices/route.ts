@@ -1,19 +1,8 @@
 import { db } from "~/server/db";
 import { NextResponse } from "next/server";
 import { headers } from 'next/headers';
-import { env } from "~/env";
 
-export const runtime = 'edge';
-
-export async function GET() {
-  // Check for authorization
-  const headersList = headers();
-  const authorization = headersList.get('Authorization');
-  
-  if (authorization !== `Bearer ${env.CRON_SECRET}`) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
+async function simulatePrices() {
   try {
     const companies = await db.company.findMany();
 
@@ -35,10 +24,22 @@ export async function GET() {
         });
       }
     }
-    
-    return NextResponse.json({ success: true });
+    return { success: true };
   } catch (error) {
-    console.error('Error updating prices:', error);
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    console.error('Error simulating prices:', error);
+    return { success: false, error: String(error) };
   }
+}
+
+export async function GET() {
+  // Check for authorization
+  const headersList = headers();
+  const authorization = headersList.get('Authorization');
+  
+  if (authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const result = await simulatePrices();
+  return NextResponse.json(result);
 }
