@@ -1,0 +1,18 @@
+{
+  "name": "stock-price-simulator",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/simulate-prices.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.21.1",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "prisma": "^5.21.1"
+  }
+}
