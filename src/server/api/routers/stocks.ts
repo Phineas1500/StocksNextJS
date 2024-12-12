@@ -43,12 +43,9 @@ export const stocksRouter = createTRPCRouter({
         stockId: z.string(),
         quantity: z.number().positive()
       }))
-      .mutation(async ({ ctx, input }: {
-        ctx: { db: PrismaClient; session: Session };
-        input: { stockId: string; quantity: number };
-      }) => {
+      .mutation(async ({ ctx, input }) => {
         return await ctx.db.$executeRaw`
-          CALL BuyStock(${ctx.session.user.id}, ${input.stockId}, ${input.quantity})
+          SELECT buy_stock(${ctx.session.user.id}::text, ${input.stockId}::text, ${input.quantity}::integer)
         `;
       }),
 
@@ -57,12 +54,9 @@ export const stocksRouter = createTRPCRouter({
         stockId: z.string(),
         quantity: z.number().positive()
       }))
-      .mutation(async ({ ctx, input }: {
-        ctx: { db: PrismaClient; session: Session };
-        input: { stockId: string; quantity: number };
-      }) => {
+      .mutation(async ({ ctx, input }) => {
         return await ctx.db.$executeRaw`
-          CALL SellStock(${ctx.session.user.id}, ${input.stockId}, ${input.quantity})
+          SELECT sell_stock(${ctx.session.user.id}::text, ${input.stockId}::text, ${input.quantity}::integer)
         `;
       }),
       getPortfolio: protectedProcedure

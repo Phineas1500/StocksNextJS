@@ -78,7 +78,7 @@ export const StockMarket: React.FC<StockMarketProps> = ({ initialStocks = [] }) 
               <CardTitle>{stock.company.symbol}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${stock.currentPrice}</p>
+              <p className="text-2xl font-bold">${stock.currentPrice.toFixed(2)}</p>
               <p className="text-gray-500">{stock.company.name}</p>
               
               <div className="mt-4 space-y-2">

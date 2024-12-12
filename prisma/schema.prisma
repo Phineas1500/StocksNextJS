@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -16,12 +16,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -51,7 +51,7 @@ model User {
   name          String?
   image         String?
   emailVerified DateTime?
-  balance       Decimal   @default(10000.00) @db.Decimal(10, 2)
+  balance       Decimal   @default(10000.00) @db.Decimal
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -68,7 +68,7 @@ model Company {
   id          String   @id @default(cuid())
   symbol      String   @unique // Stock symbol (e.g., AAPL)
   name        String
-  description String   @db.Text
+  description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -79,7 +79,7 @@ model Company {
 
 model StockPrice {
   id        String   @id @default(cuid())
-  price     Decimal  @db.Decimal(10, 2)
+  price     Decimal  @db.Decimal
   timestamp DateTime @default(now())
 
   // Relations
@@ -120,8 +120,8 @@ model Transaction {
   id        String           @id @default(cuid())
   type      TransactionType
   quantity  Int
-  price     Decimal         @db.Decimal(10, 2)
-  total     Decimal         @db.Decimal(10, 2)
+  price     Decimal         @db.Decimal
+  total     Decimal         @db.Decimal
   createdAt DateTime        @default(now())
 
   // Relations

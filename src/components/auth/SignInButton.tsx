@@ -11,7 +11,7 @@ export function SignInButton() {
     return (
       <div className="flex items-center gap-4">
         <p className="text-sm font-medium text-white">
-          Balance: ${session.user.balance}
+          Balance: ${Number(session.user.balance).toFixed(2)}
         </p>
         <Button
           onClick={() => signOut()}
